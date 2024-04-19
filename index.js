@@ -20,10 +20,12 @@ const UserRouter = require("./routers/user.router");
 const { handleUserConnection, userSocketMap } = require("./utils/IDmanagement");
 const friendRouter = require("./routers/friend.router");
 const ChatRouter = require("./routers/chat.router");
+const GroupRouter = require("./routers/group.router");
 
 app.use("/user", UserRouter);
 app.use("/friend", friendRouter);
 app.use("/chat", ChatRouter);
+app.use("/group", GroupRouter);
 
 io.on("connection", (socket) => {
   handleUserConnection(socket);
@@ -47,6 +49,28 @@ io.on("connection", (socket) => {
   socket.on("send-message", ({ recipient, sender }) => {
     const recipientSocketId = userSocketMap.get(recipient);
     io.to(recipientSocketId).emit("fetchChat", sender);
+  });
+  socket.on("new-group", (data) => {
+    const { members } = data;
+    members.forEach((memberId) => {
+      const recipientSocketId = userSocketMap.get(memberId);
+      if (recipientSocketId) {
+        io.to(recipientSocketId).emit("groupAddedNotification", {
+          group: data.group,
+        });
+      }
+    });
+  });
+  socket.on("groupMessageNotification", (data) => {
+    const { members } = data;
+    members.forEach((memberId) => {
+      const recipientSocketId = userSocketMap.get(memberId._id.toString());
+      if (recipientSocketId) {
+        io.to(recipientSocketId).emit("groupMessage", {
+          group: data.group,
+        });
+      }
+    });
   });
 });
 
