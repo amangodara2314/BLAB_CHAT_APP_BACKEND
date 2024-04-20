@@ -50,6 +50,10 @@ io.on("connection", (socket) => {
     const recipientSocketId = userSocketMap.get(recipient);
     io.to(recipientSocketId).emit("fetchChat", sender);
   });
+  socket.on("join_room", (id) => {
+    socket.join(id);
+    console.log("user joined", id);
+  });
   socket.on("new-group", (data) => {
     const { members } = data;
     members.forEach((memberId) => {
@@ -64,6 +68,7 @@ io.on("connection", (socket) => {
   socket.on("groupMessageNotification", (data) => {
     const { members } = data;
     members.forEach((memberId) => {
+      io.to(data.group).emit("addGroupMessage", data);
       const recipientSocketId = userSocketMap.get(memberId._id.toString());
       if (recipientSocketId) {
         io.to(recipientSocketId).emit("groupMessage", {

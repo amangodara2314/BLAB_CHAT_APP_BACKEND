@@ -72,6 +72,7 @@ class GroupController {
             msg: "message sent successfully",
             status: 1,
             popGroup,
+            msg,
           });
         }
       } catch (error) {
