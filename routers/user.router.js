@@ -24,6 +24,13 @@ UserRouter.post("/login", (req, res) => {
     .catch((err) => res.send(err));
 });
 
+UserRouter.put("/set-about/:userId", (req, res) => {
+  new UserController()
+    .setAbout(req.params.userId, req.body)
+    .then((success) => res.send(success))
+    .catch((err) => res.send(err));
+});
+
 UserRouter.get("/get-friends/:userId", (req, res) => {
   new UserController()
     .getFriends(req.params.userId)

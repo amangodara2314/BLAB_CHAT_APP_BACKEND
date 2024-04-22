@@ -115,6 +115,23 @@ class UserController {
       }
     });
   }
+  setAbout(userId, { about }) {
+    return new Promise(async (res, rej) => {
+      try {
+        console.log(about);
+        const user = await User.findByIdAndUpdate(userId, { about: about });
+        console.log(user);
+        res({
+          msg: "updated successfully",
+          status: 1,
+          user,
+        });
+      } catch (error) {
+        console.log(error);
+        rej({ msg: "Internal Server Error", status: 0 });
+      }
+    });
+  }
 }
 
 module.exports = UserController;

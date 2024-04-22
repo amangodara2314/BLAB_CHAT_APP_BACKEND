@@ -18,7 +18,14 @@ const messageSchema = new mongoose.Schema({
   },
   content: {
     type: String,
-    required: true,
+  },
+  reaction: {
+    type: String,
+    enum: ["😊", "😂", "😍", "😎", "🤔"],
+  },
+  attachment: {
+    type: String,
+    default: null,
   },
   timestamp: {
     type: Date,

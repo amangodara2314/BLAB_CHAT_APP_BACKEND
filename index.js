@@ -13,6 +13,7 @@ const io = new Server(server, {
 });
 const FriendRequestController = require("./controllers/friend.controller");
 app.use(express.json());
+app.use(express.static("uploads"));
 app.use(cors());
 require("dotenv").config();
 const MONGODB = process.env.MONGODB;
@@ -52,7 +53,6 @@ io.on("connection", (socket) => {
   });
   socket.on("join_room", (id) => {
     socket.join(id);
-    console.log("user joined", id);
   });
   socket.on("new-group", (data) => {
     const { members } = data;
@@ -65,16 +65,41 @@ io.on("connection", (socket) => {
       }
     });
   });
+  socket.on("leaveRoom", (roomId) => {
+    socket.leave(roomId);
+  });
   socket.on("groupMessageNotification", (data) => {
     const { members } = data;
+    let offline = [];
+    const socketIdsInRoom = io.of("/").adapter.rooms.get(data.group);
+
+    if (socketIdsInRoom) {
+      const socketIdsArray = Array.from(socketIdsInRoom);
+      members.forEach((memberId) => {
+        const recipientSocketId = userSocketMap.get(memberId._id.toString());
+        if (socketIdsArray.includes(recipientSocketId)) {
+          offline.push(memberId._id);
+          io.to(recipientSocketId).emit("groupMessage", {
+            data,
+            offlineUser: offline,
+          });
+        } else {
+          io.to(recipientSocketId).emit("newGroupMessage", data);
+        }
+      });
+    } else {
+      console.log("Room does not exist");
+    }
+  });
+  socket.on("removed", ({ memberId, group }) => {
+    const recipientSocketId = userSocketMap.get(memberId);
+    io.to(recipientSocketId).emit("removedFromGroup", group);
+  });
+  socket.on("deleted", ({ memberId, group }) => {
+    const { members } = data;
     members.forEach((memberId) => {
-      io.to(data.group).emit("addGroupMessage", data);
       const recipientSocketId = userSocketMap.get(memberId._id.toString());
-      if (recipientSocketId) {
-        io.to(recipientSocketId).emit("groupMessage", {
-          group: data.group,
-        });
-      }
+      io.to(recipientSocketId).emit("groupDeleted", group);
     });
   });
 });

@@ -13,7 +13,10 @@ const GroupMessageSchema = new mongoose.Schema({
   },
   content: {
     type: String,
-    required: true,
+  },
+  attachment: {
+    type: String,
+    default: null,
   },
   timestamp: {
     type: Date,
