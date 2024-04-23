@@ -95,11 +95,10 @@ io.on("connection", (socket) => {
     const recipientSocketId = userSocketMap.get(memberId);
     io.to(recipientSocketId).emit("removedFromGroup", group);
   });
-  socket.on("deleted", ({ memberId, group }) => {
-    const { members } = data;
+  socket.on("deleted", ({ members, group }) => {
     members.forEach((memberId) => {
       const recipientSocketId = userSocketMap.get(memberId._id.toString());
-      io.to(recipientSocketId).emit("groupDeleted", group);
+      io.to(recipientSocketId).emit("removedFromGroup", group);
     });
   });
 });
